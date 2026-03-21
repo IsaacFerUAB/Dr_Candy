@@ -38,9 +38,9 @@ public:
      * @return true if the candy at the given coordinates should explode, false otherwise.
      */
     bool shouldExplode(int x, int y) const;
-    bool comprobarEnFila(int x, int y) const; //auxiliares de shouldexplode
-    bool comprobarEnColumna(int x, int y) const;//same
-
+    bool comprobarEnFila(int x, int y, CandyType tipo) const; //auxiliares de shouldexplode
+    bool comprobarEnColumna(int x, int y, CandyType tipo) const;//same
+    bool comprobarDiagonales(int x, int y, CandyType tipo) const
     /**
      * Explode all candies that should explode (lines of candies)
      * and then let candies above drop down to fill the gaps.
