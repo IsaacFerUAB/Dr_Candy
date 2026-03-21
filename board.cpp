@@ -1,7 +1,7 @@
 #include "board.h"
 #include <memory>
 #include <iostream>
-
+using namespace std;
 Board::Board(int width, int height)// Implementado :D
     :   m_ancho(width);
         m_altura(height); //inicializacion d'atributos (lo dice en la guia d'estil) es como m_ancho = width;
@@ -235,12 +235,126 @@ std::vector<Candy*> Board::explodeAndDrop()
 
 bool Board::dump(const std::string& output_path) const
 {
-    // Implement your code here
-    return false;
+    #include <fstream>
+#include <string>
+
+bool Board::dump(const std::string& output_path) const
+{
+    ofstream archivo;
+    archivo.open(output_path);
+
+    if (!archivo.is_open())
+    {
+        return false;
+    }
+
+    for (int y = 0; y < m_height; y++)
+    {
+        for (int x = 0; x < m_width; x++)
+        {
+            Candy* caramelo = getCell(x, y);
+
+            if (caramelo == nullptr)
+            {
+                archivo << ".";
+            }
+            else
+            {
+                switch (caramelo.getType()){
+                    case CandyType::TYPE_RED:
+                        archivo << 'R';
+                        break;
+                    case CandyType::TYPE_GREEN:
+                        archivo << 'G';
+                        break;
+                    case CandyType::TYPE_YELLOW:
+                        archivo << 'Y';
+                        break;
+                    case CandyType::TYPE_BLUE:
+                        archivo << 'B';
+                        break;
+                    case CandyType::TYPE_PURPLE:
+                        archivo << 'P';
+                        break;
+                    case CandyType::TYPE_ORANGE:
+                        archivo << 'O';
+                        break;
+                }
+
+                archivo << ' ';
+            }
+        }
+        
+        archivo << endl;
+    }
+
+    archivo.close();
+    
+    return true;
+}
 }
 
 bool Board::load(const std::string& input_path)
 {
-    // Implement your code here
-    return false;
+    #include <fstream>
+#include <string>
+
+bool Board::dump(const std::string& output_path) const
+{
+    ifstream archivo;
+    archivo.open(output_path);
+
+    if (!archivo.is_open())
+    {
+        return false;
+    }
+
+    for (int y = 0; y < m_height; y++)
+    {
+        for (int x = 0; x < m_width; x++)
+        {
+            Candy* caramelo = getCell(x, y);
+
+            if (caramelo == '.')
+            {
+                m_matriz[x][y] = nullptr;
+            }
+            else
+            {
+                switch (caramelo.getType()){
+                    case 'R':
+                        Candy candy = Candy(TYPE_RED);
+                        m_matriz[i][j] = &candy;
+                        break;
+                    case 'G'
+                        Candy candy = Candy(TYPE_GREEN);
+                        m_matriz[i][j] = &candy;
+                        break;
+                    case 'Y':
+                        Candy candy = Candy(TYPE_YELLOW);
+                        m_matriz[i][j] = &candy;
+                        break;
+                    case 'B':
+                        Candy candy = Candy(TYPE_BLUE);
+                        m_matriz[i][j] = &candy;
+                        break;
+                    case 'P':
+                        Candy candy = Candy(TYPE_PURPLE);
+                        m_matriz[i][j] = &candy;
+                        break;
+                    case 'O':
+                        Candy candy = Candy(TYPE_ORANGE);
+                        m_matriz[i][j] = &candy;
+                        break;
+                }
+            }
+        }
+        
+        archivo << endl;
+    }
+
+    archivo.close();
+    
+    return true;
+}
 }
