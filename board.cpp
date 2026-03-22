@@ -1,6 +1,8 @@
 #include "board.h"
 #include <memory>
 #include <iostream>
+#include <fstream>
+#include <string>
 using namespace std;
 Board::Board(int width, int height)// Implementado :D
     :   m_ancho(width);
@@ -12,7 +14,6 @@ Board::Board(int width, int height)// Implementado :D
         {
             m_matriz[i][j] = nullptr; //nullptr es un puntero nulo (mas safe)
         }
-
     }
 }
 
@@ -230,13 +231,74 @@ bool Board::shouldExplode(int x, int y) const
 std::vector<Candy*> Board::explodeAndDrop()
 {
     // Implement your code here
-    return {};
-}
+    std::vector<Candy*> caramelosExplotados;
+    bool auxExplosion[DEFAULT_BOARD_WIDTH][DEFAULT_BOARD_HEIGHT];
+    bool sinExplosiones;
+    bool sinCaidas;
+    do {
+        sinExplosiones = true;
+        sinCaidas = true;
+        //bucle que recorre todo el tablero para buscar los caramelos que deben explotar
+        //guardando en una matriz aux true en caso de que explote y false en el contrario
+        //ademas de guardarlo en el vector
+        for (int fil = 0; fil < m_ancho; fil++) 
+        {
+            for (int col = 0; col < m_altura; col++)
+            {
+                Candy* c = m_matriz[fil][col];
+                if (m_matriz[fil][col] != nullptr && shouldExplode(fil, col))
+                {
+                    auxExplosion[fil][col] = true;
+                    caramelosExplotados.push_back(c);
+                }
+                else
+                    auxExplosion[fil][col] = false;
+            }
+        }
+        
+        //bucle que a partir de la matriz auxiliar explota los caramelos 
+        for (int fil = 0; fil < m_ancho; fil++)
+        {
+            for (int col = 0; col < m_altura; col++)
+            {
+                if (auxExplosion[fil][col] == true)
+                {
+                    m_matriz[fil][col] = nullptr;
+                }
+            }
+        }
 
-bool Board::dump(const std::string& output_path) const
-{
-    #include <fstream>
-#include <string>
+        //bucle encargado de la gravedad, en caso de una celda vacia con un caramelo en la celda 
+        //inmediatamente superior, copiara su contendio y luego la que estaba arriba explota, todo esto de abajo a arriba
+        for (int fil = m_ancho-1; fil >= 0; fil--)
+        {
+            for (int col = m_altura-1; col >= 0; col--)
+            {
+                if (col != 0 && m_matriz[fil][col] == nullptr && m_matriz[fil][col-1] != nullptr)
+                {
+                    m_matriz[fil][col] = m_matriz[fil][col - 1];
+                    m_matriz[fil][col - 1] = nullptr;
+                }
+            }
+        }
+
+        //bucle encargado de comprobar si queda explosiones o caidas pendientes
+        //en dicho caso no permitira que la funcion termine 
+        for (int fil = m_ancho - 1; fil >= 0; fil--)
+        {
+            for (int col = m_altura - 1; col >= 0; col--)
+            {
+
+                if (shouldExplode(fil, col))
+                    sinExplosiones = false;
+
+                if (col != 0 && m_matriz[fil][col] == nullptr && m_matriz[fil][col - 1] != nullptr)
+                    sinCaidas = false;
+            }
+        }
+    } while (sinExplosiones == false || sinCaidas == false);
+    return caramelosExplotados;
+}
 
 bool Board::dump(const std::string& output_path) const
 {
@@ -248,19 +310,20 @@ bool Board::dump(const std::string& output_path) const
         return false;
     }
 
-    for (int y = 0; y < m_height; y++)
+    for (int y = 0; y < m_altura; y++)
     {
-        for (int x = 0; x < m_width; x++)
+        for (int x = 0; x < m_ancho; x++)
         {
             Candy* caramelo = getCell(x, y);
 
             if (caramelo == nullptr)
             {
-                archivo << ".";
+                archivo << ". ";
             }
             else
             {
-                switch (caramelo.getType()){
+                switch (caramelo->getType()) //la flecha es pq como es un puntero . no sirve para llamar metodos
+                {
                     case CandyType::TYPE_RED:
                         archivo << 'R';
                         break;
@@ -292,69 +355,77 @@ bool Board::dump(const std::string& output_path) const
     
     return true;
 }
-}
 
-bool Board::load(const std::string& input_path)
-{
-    #include <fstream>
-#include <string>
 
-bool Board::dump(const std::string& output_path) const
+bool Board::load(const std::string& input_path) const
 {
     ifstream archivo;
-    archivo.open(output_path);
+    archivo.open(input_path);
 
     if (!archivo.is_open())
     {
         return false;
     }
 
-    for (int y = 0; y < m_height; y++)
+    for (int y = 0; y < m_altura; y++)
     {
-        for (int x = 0; x < m_width; x++)
+        for (int x = 0; x < m_ancho; x++)
         {
-            Candy* caramelo = getCell(x, y);
+            char caracter;
+            archivo >> caracter; 
 
-            if (caramelo == '.')
+            if (caracter == '.')
             {
                 m_matriz[x][y] = nullptr;
             }
             else
             {
-                switch (caramelo.getType()){
+                switch (caracter){
                     case 'R':
-                        Candy candy = Candy(TYPE_RED);
-                        m_matriz[i][j] = &candy;
+                    {
+                        m_matriz[x][y] = new Candy(CandyType::TYPE_RED);
                         break;
-                    case 'G'
-                        Candy candy = Candy(TYPE_GREEN);
-                        m_matriz[i][j] = &candy;
+                    }
+                        
+                    case 'G':
+                    {
+                        m_matriz[x][y] = new Candy(CandyType::TYPE_GREEN);
                         break;
+                    }
+                    
                     case 'Y':
-                        Candy candy = Candy(TYPE_YELLOW);
-                        m_matriz[i][j] = &candy;
+                    {
+                        m_matriz[x][y] = new Candy(CandyType::TYPE_YELLOW);
                         break;
+                    }
                     case 'B':
-                        Candy candy = Candy(TYPE_BLUE);
-                        m_matriz[i][j] = &candy;
+                    {
+                        m_matriz[x][y] = new Candy(CandyType::TYPE_BLUE);
                         break;
+                    }
                     case 'P':
-                        Candy candy = Candy(TYPE_PURPLE);
-                        m_matriz[i][j] = &candy;
+                    {
+                        m_matriz[x][y] = new Candy(CandyType::TYPE_PURPLE);
                         break;
+                    }
                     case 'O':
-                        Candy candy = Candy(TYPE_ORANGE);
-                        m_matriz[i][j] = &candy;
+                    {
+                        m_matriz[x][y] = new Candy(CandyType::TYPE_ORANGE);
                         break;
+                    }
+                    default:
+                    {
+                        m_matriz[x][y] = nullptr;
+                        break;
+                    }
                 }
             }
         }
         
         archivo << endl;
     }
-
     archivo.close();
     
     return true;
 }
-}
+
