@@ -4,13 +4,14 @@
 #include <fstream>
 #include <string>
 using namespace std;
-Board::Board(int width, int height)// Implementado :D
-    :   m_ancho(width);
-        m_altura(height); //inicializacion d'atributos (lo dice en la guia d'estil) es como m_ancho = width;
+Board::Board(int width, int height)
 {
-    for(int i = 0; i < m_ancho; i++)
+    m_ancho = width;
+    m_altura = height;
+
+    for(int i = 0; i < DEFAULT_BOARD_WIDTH; i++)
     {
-        for(int j = 0; j < height; j++)
+        for(int j = 0; j < DEFAULT_BOARD_HEIGHT; j++)
         {
             m_matriz[i][j] = nullptr; //nullptr es un puntero nulo (mas safe)
         }
@@ -19,24 +20,24 @@ Board::Board(int width, int height)// Implementado :D
 
 Board::~Board()
 {
-    // Implement your code here
+    
+    // Implement
 }
 
 
 Candy* Board::getCell(int x, int y) const // Implementado :D
 {
-    if ((x >= m_ancho) || (x < 0)) || (y >= m_altura) || (y < 0)//mira is x y estan en el tablero
+    if ((x >= m_ancho) || (x < 0) || (y >= m_altura) || (y < 0))//mira is x y estan en el tablero
     {
         return nullptr;
     }
-
     return m_matriz[x][y];
 }
 
 void Board::setCell(Candy* candy, int x, int y) // Implementado :D
 {
     
-    if ((x < m_ancho) && (x >= 0)) && (y < m_altura) && (y >= 0)//mira is x y estan en el tablero
+    if ((x < m_ancho) && (x >= 0) && (y < m_altura) && (y >= 0))//mira is x y estan en el tablero
     {
         m_matriz[x][y] = candy;
     }
@@ -221,17 +222,26 @@ bool Board::shouldExplode(int x, int y) const
     }
 
     CandyType tipo = carameloCentral->getType();
-    if (comprobarEnFila(x, y, tipo)){return true;} 
-    if (comprobarEnColumna(x, y, tipo)){return true;} 
-    if (comprobarDiagonales(x, y, tipo)) {return true;} 
+    if (comprobarEnFila(x, y, tipo))
+        {
+            return true;
+        }
+    if (comprobarEnColumna(x, y, tipo))
+        {
+            return true;
+        } 
+    if (comprobarDiagonales(x, y, tipo)) 
+        {
+            return true;
+        } 
     
     return false;
 }
 
-std::vector<Candy*> Board::explodeAndDrop()
+vector<Candy*> Board::explodeAndDrop()
 {
     // Implement your code here
-    std::vector<Candy*> caramelosExplotados;
+    vector<Candy*> caramelosExplotados;
     bool auxExplosion[DEFAULT_BOARD_WIDTH][DEFAULT_BOARD_HEIGHT];
     bool sinExplosiones;
     bool sinCaidas;
@@ -252,7 +262,10 @@ std::vector<Candy*> Board::explodeAndDrop()
                     caramelosExplotados.push_back(c);
                 }
                 else
+                {
                     auxExplosion[fil][col] = false;
+                }
+                    
             }
         }
         
@@ -290,15 +303,28 @@ std::vector<Candy*> Board::explodeAndDrop()
             {
 
                 if (shouldExplode(fil, col))
+                {
                     sinExplosiones = false;
+                }
+                    
 
                 if (col != 0 && m_matriz[fil][col] == nullptr && m_matriz[fil][col - 1] != nullptr)
+                {
                     sinCaidas = false;
+                }
+                    
             }
         }
     } while (sinExplosiones == false || sinCaidas == false);
     return caramelosExplotados;
 }
+
+Candy candyRed(CandyType::TYPE_RED);
+Candy candyGreen(CandyType::TYPE_GREEN);
+Candy candyBlue(CandyType::TYPE_BLUE);
+Candy candyYellow(CandyType::TYPE_YELLOW);
+Candy candyOrange(CandyType::TYPE_ORANGE);
+Candy candyPurple(CandyType::TYPE_PURPLE);
 
 bool Board::dump(const std::string& output_path) const
 {
@@ -309,6 +335,7 @@ bool Board::dump(const std::string& output_path) const
     {
         return false;
     }
+    archivo << m_ancho << " " << m_altura << endl; //para saber el tamañño del tablero al leer
 
     for (int y = 0; y < m_altura; y++)
     {
@@ -357,7 +384,7 @@ bool Board::dump(const std::string& output_path) const
 }
 
 
-bool Board::load(const std::string& input_path) const
+bool Board::load(const std::string& input_path)
 {
     ifstream archivo;
     archivo.open(input_path);
@@ -366,7 +393,16 @@ bool Board::load(const std::string& input_path) const
     {
         return false;
     }
+    archivo >> m_ancho >> m_altura;
 
+    for (int i = 0; i < DEFAULT_BOARD_WIDTH; i++)
+    {
+        for (int j = 0; j < DEFAULT_BOARD_HEIGHT; j++)
+        {
+            m_matriz[i][j] = nullptr;
+        }
+    }
+    
     for (int y = 0; y < m_altura; y++)
     {
         for (int x = 0; x < m_ancho; x++)
@@ -380,37 +416,36 @@ bool Board::load(const std::string& input_path) const
             }
             else
             {
-                switch (caracter){
+                switch (caracter)
+                {
                     case 'R':
                     {
-                        m_matriz[x][y] = new Candy(CandyType::TYPE_RED);
+                        m_matriz[x][y] = &candyRed;
                         break;
-                    }
-                        
+                    }     
                     case 'G':
                     {
-                        m_matriz[x][y] = new Candy(CandyType::TYPE_GREEN);
+                        m_matriz[x][y] = &candyGreen;
                         break;
                     }
-                    
                     case 'Y':
                     {
-                        m_matriz[x][y] = new Candy(CandyType::TYPE_YELLOW);
+                        m_matriz[x][y] = &candyYellow;
                         break;
                     }
                     case 'B':
                     {
-                        m_matriz[x][y] = new Candy(CandyType::TYPE_BLUE);
+                        m_matriz[x][y] = &candyBlue;
                         break;
                     }
                     case 'P':
                     {
-                        m_matriz[x][y] = new Candy(CandyType::TYPE_PURPLE);
+                        m_matriz[x][y] = &candyPurple;
                         break;
                     }
                     case 'O':
                     {
-                        m_matriz[x][y] = new Candy(CandyType::TYPE_ORANGE);
+                        m_matriz[x][y] = &candyOrange;
                         break;
                     }
                     default:
@@ -421,11 +456,9 @@ bool Board::load(const std::string& input_path) const
                 }
             }
         }
-        
-        archivo << endl;
     }
+    
     archivo.close();
     
     return true;
 }
-

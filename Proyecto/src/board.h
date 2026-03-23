@@ -38,9 +38,7 @@ public:
      * @return true if the candy at the given coordinates should explode, false otherwise.
      */
     bool shouldExplode(int x, int y) const;
-    bool comprobarEnFila(int x, int y, CandyType tipo) const; //auxiliares de shouldexplode
-    bool comprobarEnColumna(int x, int y, CandyType tipo) const;//same
-    bool comprobarDiagonales(int x, int y, CandyType tipo) const
+    
     /**
      * Explode all candies that should explode (lines of candies)
      * and then let candies above drop down to fill the gaps.
@@ -92,9 +90,13 @@ public:
 private:
 
     /// Students can add as many protected methods and attributes as needed.
-    int m_altura;
     int m_ancho;
-    Candy* m_matriz[DEFAULT_BOARD_WIDTH][DEFAULT_BOARD_HEIGHT]
+    int m_altura;
+    
+    bool comprobarEnFila(int x, int y, CandyType tipo) const; //auxiliares de shouldexplode
+    bool comprobarEnColumna(int x, int y, CandyType tipo) const;//same
+    bool comprobarDiagonales(int x, int y, CandyType tipo) const;
+    Candy* m_matriz[DEFAULT_BOARD_WIDTH][DEFAULT_BOARD_HEIGHT];
 };
 
 #endif
